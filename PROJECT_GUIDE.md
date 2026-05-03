@@ -1,6 +1,4 @@
-# Sensor CV Algorithm Pipeline — Project Documentation for Interviews
-
-This document describes **every artifact** in the repository, the **end-to-end pipeline**, **algorithms used** (what they do and why they were chosen), and **how to discuss trade-offs** in a technical interview (e.g., sensor / ISP / computer vision roles).
+# Sensor CV Algorithm Pipeline — Project Documentation 
 
 ---
 
@@ -26,7 +24,7 @@ Below is the **intentional project layout** as tracked in Git (excluding machine
 | `README.md` | Documentation | Quick orientation: setup, commands, links to GitHub Pages, repo layout. |
 | `requirements.txt` | Dependencies | Lists non-PyTorch libraries (OpenCV headless, scikit-image, SciPy, Matplotlib, tqdm, Pillow, NumPy). PyTorch is installed separately (CPU wheel suggested locally; Colab often ships Torch). |
 | `.gitignore` | Git config | Prevents committing virtual environments, downloaded datasets, training weights, and local output figures—keeps the repo portable and small. |
-| `PROJECT_INTERVIEW_GUIDE.md` | Documentation | **This file** — detailed narrative for interviews. |
+| `PROJECT_GUIDE.md` | Documentation | **This file** — detailed narrative. |
 | `docs/index.html` | Static website | GitHub Pages landing page: tabbed sections, links, embedded figures from `docs/assets/`. |
 | `docs/assets/` | Figures & summary | PNG exports used by the website plus `run_summary.json` (numeric PSNR/SSIM snapshot from the export script). |
 | `scripts/` | Runnable utilities | Data download, demos, and figure regeneration (see §4). |
@@ -61,10 +59,6 @@ Below is the **intentional project layout** as tracked in Git (excluding machine
 - **What it does:** Excludes `.venv/`, `data/`, `outputs/`, `*.pt`, `__pycache__/`, etc.
 - **Why:** Datasets and weights are large and reproducible from scripts; contributors clone a lean repo and regenerate artifacts.
 
-#### `PROJECT_INTERVIEW_GUIDE.md`
-
-- **What it is:** Long-form English narrative for interviews (this document).
-
 ---
 
 ### 3.2 Documentation & website (`docs/`)
@@ -73,7 +67,7 @@ Below is the **intentional project layout** as tracked in Git (excluding machine
 
 - **What it is:** A **static** portfolio page deployed via **GitHub Pages** (branch `main`, folder `/docs`).
 - **What it does:** Presents the project to non-Python readers: tabs for results vs pipeline vs local execution vs references; embeds images under `docs/assets/`; explains that **CNN training is not executed in the browser**—only pre-rendered outputs are shown unless you add new PNGs after training.
-- **Interview angle:** Distinguish **static documentation** from **executable pipeline** (Colab/local).
+- Distinguish **static documentation** from **executable pipeline** (Colab/local).
 
 #### `docs/assets/classical_pipeline_grid.png`
 
@@ -129,7 +123,7 @@ Below is the **intentional project layout** as tracked in Git (excluding machine
 #### `src/classical.py`
 
 - **Role:** Library of **classical image processing** primitives and one bundled **`analyze_gray`** pipeline for demos.
-- **Major functions (each builds interview vocabulary):**
+- **Major functions:**
 
   | Function / concept | What it does | Why it matters for sensors / ISP |
   |-------------------|--------------|-----------------------------------|
@@ -197,7 +191,7 @@ Below is the **intentional project layout** as tracked in Git (excluding machine
   7. If **`weights.pt`** is provided: load `DenoiseCNN`, predict noise, reconstruct, compute metrics.
   8. Save a **3×4 matplotlib montage** and print **PSNR/SSIM** table vs clean.
 
-- **Interview angle:** This module is your **story of classical vs learned** on the **same noisy observation**.
+- This module is your **story of classical vs learned** on the **same noisy observation**.
 
 #### `src/metrics.py`
 
@@ -271,7 +265,7 @@ Rebuilds **`docs/assets/*.png`** for Pages—does **not** train CNN.
 
 ---
 
-## 5. Algorithms — conceptual cheat sheet for interviews
+## 5. Algorithms:
 
 ### 5.1 Classical algorithms (what / why here)
 
@@ -311,7 +305,7 @@ Rebuilds **`docs/assets/*.png`** for Pages—does **not** train CNN.
 
 ---
 
-## 6. Honest limitations (good to volunteer in interviews)
+## 6. Honest limitations 
 
 - **Synthetic Gaussian noise** is **not** a complete camera noise model (no Poisson photon noise, no ISP-specific banding, no CFA demosaic artifacts).
 - **STL-10 grayscale conversion** is a pedagogical simplification; real sensors have **Bayer**, **black level**, **gain**, **tone mapping**, etc.
@@ -321,7 +315,7 @@ Rebuilds **`docs/assets/*.png`** for Pages—does **not** train CNN.
 
 ---
 
-## 7. Suggested talking points by interview theme
+## 7. Suggested points
 
 - **Sensor team:** Start from **noise / SNR**, **ISP chain placement** (denoise early vs late), **latency vs quality**, **classical first guess vs learned refinement**.
 - **Algorithms student role:** Walk through **Stage B–D**, cite **complexity intuition** (median O(kernel area) per pixel with histogram trick internally in optimized libs; CNN as stacked convs).

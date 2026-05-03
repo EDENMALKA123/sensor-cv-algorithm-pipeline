@@ -5,6 +5,8 @@
 
 **Browse the full visual walkthrough (figures, metrics, tabbed sections): [edenmalka123.github.io/sensor-cv-algorithm-pipeline](https://edenmalka123.github.io/sensor-cv-algorithm-pipeline/)**
 
+**Interview prep (every file, algorithms, pipeline narrative): [PROJECT_INTERVIEW_GUIDE.md](PROJECT_INTERVIEW_GUIDE.md)**
+
 Python portfolio project aligned with **image sensor / ISP-style algorithm engineering**: classical preprocessing and analysis, plus a **deep learning denoiser** trained on realistic additive noise. Suitable to discuss for roles mixing **image processing**, **computer vision**, and **deep learning** (mobile/automotive sensor context).
 
 ## What this repo demonstrates

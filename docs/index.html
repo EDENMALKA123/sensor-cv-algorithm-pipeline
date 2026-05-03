@@ -4,7 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sensor-oriented image processing & CNN denoising — Eden Malka</title>
-  <meta name="description" content="End-to-end Python project: classical image processing, STL-10 noisy patches, residual CNN denoising, PSNR/SSIM." />
+  <meta name="description" content="Live project walkthrough: classical image processing figures, metrics, STL-10 + CNN denoising pipeline." />
+  <meta name="theme-color" content="#0f1419" />
   <style>
     :root {
       --bg: #0f1419;
@@ -12,8 +13,10 @@
       --text: #e8eef7;
       --muted: #9fb0c8;
       --accent: #66b3ff;
+      --accent-dim: #3d8fd9;
       --border: #2c3a50;
       --code-bg: #121922;
+      --ok: #59a14f;
     }
     * { box-sizing: border-box; }
     body {
@@ -26,16 +29,78 @@
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
     header {
-      padding: 2.5rem 1.5rem 2rem;
+      padding: 2rem 1.25rem 1.75rem;
       border-bottom: 1px solid var(--border);
       background: linear-gradient(180deg, #162030 0%, var(--bg) 100%);
     }
-    .wrap { max-width: 880px; margin: 0 auto; padding: 0 1.25rem; }
-    h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 0.5rem; letter-spacing: -0.02em; }
-    .subtitle { color: var(--muted); font-size: 1.05rem; margin: 0 0 1rem; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 0 1.25rem; }
+    h1 { font-size: 1.65rem; font-weight: 700; margin: 0 0 0.5rem; letter-spacing: -0.02em; }
+    .subtitle { color: var(--muted); font-size: 1.05rem; margin: 0 0 1rem; max-width: 42rem; }
+    .hero-url {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 1rem;
+      background: #243047;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.65rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.92rem;
+    }
+    .hero-url strong { color: #dbe8ff; }
+    .hero-url code {
+      background: var(--code-bg);
+      padding: 0.2rem 0.45rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      word-break: break-all;
+    }
+    .pill-live {
+      background: rgba(89, 161, 79, 0.2);
+      color: #a6dba0;
+      border: 1px solid var(--ok);
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
     .links { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; font-size: 0.95rem; }
-    main { padding: 2rem 0 3rem; }
-    section {
+    main { padding: 1.75rem 0 3rem; }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 1rem;
+    }
+    .tabs button {
+      font: inherit;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted);
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .tabs button:hover { color: var(--text); border-color: var(--accent-dim); }
+    .tabs button[aria-selected="true"] {
+      background: #243047;
+      color: #dbe8ff;
+      border-color: var(--accent);
+    }
+
+    .panel { display: none; animation: fade 0.25s ease; }
+    .panel.active { display: block; }
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    section.card {
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -64,6 +129,23 @@
       overflow-x: auto;
       color: #d6e5ff;
       margin: 0.75rem 0 0;
+    }
+    figure {
+      margin: 1rem 0 0;
+      padding: 0;
+    }
+    figure img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      display: block;
+      background: #121922;
+    }
+    figcaption {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
     }
     table {
       width: 100%;
@@ -95,6 +177,15 @@
       color: #dbe8ff;
     }
     .arrow { color: var(--muted); }
+    .callout {
+      border-left: 3px solid var(--accent);
+      padding: 0.65rem 1rem;
+      margin: 1rem 0 0;
+      background: rgba(102, 179, 255, 0.08);
+      border-radius: 0 8px 8px 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
     footer {
       padding: 1.5rem;
       border-top: 1px solid var(--border);
@@ -108,7 +199,14 @@
   <header>
     <div class="wrap">
       <h1>Sensor-oriented image processing &amp; CNN denoising</h1>
-      <p class="subtitle">End-to-end Python pipeline: classical ISP-style algorithms, synthetic noise, residual CNN, PSNR / SSIM.</p>
+      <p class="subtitle">Interactive-style walkthrough of the repo: real outputs from the Python pipeline (figures are checked into <code>docs/assets/</code> so you can see results without installing anything).</p>
+
+      <div class="hero-url" role="note">
+        <span class="pill-live">Live site</span>
+        <span>You are viewing the project website. Bookmark:</span>
+        <code id="live-url">https://edenmalka123.github.io/sensor-cv-algorithm-pipeline/</code>
+      </div>
+
       <nav class="links" aria-label="Project links">
         <a href="https://github.com/EDENMALKA123/sensor-cv-algorithm-pipeline">GitHub repository</a>
         <a href="https://github.com/EDENMALKA123">Profile (@EDENMALKA123)</a>
@@ -118,54 +216,113 @@
   </header>
 
   <main class="wrap">
-    <section>
-      <h2>Overview</h2>
-      <p>
-        This project targets roles that combine <strong>image processing</strong>, <strong>computer vision</strong>, and <strong>deep learning</strong>
-        (for example mobile or automotive <strong>image sensors</strong> and ISP-style tuning). It implements a full loop from
-        <strong>data preparation</strong> through <strong>classical preprocessing</strong> and a trained <strong>convolutional denoiser</strong>, with quantitative metrics.
-      </p>
-      <div class="pipe" aria-hidden="true">
-        <span class="chip">STL-10 → grayscale patches</span>
-        <span class="arrow">→</span>
-        <span class="chip">augmentation</span>
-        <span class="arrow">→</span>
-        <span class="chip">Gaussian noise</span>
-        <span class="arrow">→</span>
-        <span class="chip">CNN predicts noise</span>
-        <span class="arrow">→</span>
-        <span class="chip">PSNR / SSIM</span>
-      </div>
-    </section>
+    <div class="tabs" role="tablist" aria-label="Sections">
+      <button type="button" role="tab" id="tab-results" aria-controls="panel-results" aria-selected="true">Results &amp; graphs</button>
+      <button type="button" role="tab" id="tab-pipeline" aria-controls="panel-pipeline" aria-selected="false">Pipeline map</button>
+      <button type="button" role="tab" id="tab-local" aria-controls="panel-local" aria-selected="false">Run locally (full CNN)</button>
+      <button type="button" role="tab" id="tab-refs" aria-controls="panel-refs" aria-selected="false">References</button>
+    </div>
 
-    <section>
-      <h2>Algorithms covered</h2>
-      <table>
-        <thead>
-          <tr><th>Area</th><th>Implementation</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Convolution &amp; smoothing</td><td>Gaussian blur, median, bilateral (<code>src/classical.py</code>)</td></tr>
-          <tr><td>Edges</td><td>Sobel, Canny</td></tr>
-          <tr><td>Thresholding</td><td>Global, adaptive, Otsu</td></tr>
-          <tr><td>Contrast</td><td>Histogram equalization</td></tr>
-          <tr><td>Geometry / regions</td><td>Morphology, connected components, Hough (probabilistic lines)</td></tr>
-          <tr><td>Resampling</td><td>Nearest / bilinear / bicubic resize</td></tr>
-          <tr><td>Deep learning</td><td>CNN + BatchNorm + ReLU; residual noise prediction; training loop (<code>src/models.py</code>, <code>src/train.py</code>)</td></tr>
-          <tr><td>Data</td><td>Patch dataset, flips/rotations/crops, random noise level (<code>src/dataset.py</code>)</td></tr>
-        </tbody>
-      </table>
-    </section>
+    <div id="panel-results" class="panel active" role="tabpanel" aria-labelledby="tab-results">
+      <section class="card">
+        <h2>What you are seeing here</h2>
+        <p>
+          GitHub Pages hosts <strong>static</strong> HTML (this page) plus images. The grids and charts below were generated by
+          <code>scripts/export_docs_assets.py</code> so visitors immediately see what the code produces.
+          Training the <strong>residual CNN</strong> still happens on your machine (or a GPU cloud): export weights with <code>src/train.py</code>, then build the full classical-vs-CNN montage with <code>src/demo.py</code>.
+        </p>
+        <div class="callout">
+          <strong>Tip:</strong> On the GitHub repo page, click <em>Settings → Pages</em> and set the site URL in <em>About → Website</em> so the link is visible next to the repo description.
+        </div>
+      </section>
 
-    <section>
-      <h2>Repository layout</h2>
-      <pre>sensor-cv-algorithm-pipeline/
+      <section class="card">
+        <h2>Classical processing montage</h2>
+        <p>Sample image (<code>skimage.data.camera</code>) corrupted with salt-and-pepper noise, then filtered and analyzed.</p>
+        <figure>
+          <img src="assets/classical_pipeline_grid.png" alt="Eight-panel classical pipeline: clean, noisy, median, bilateral, hist eq, Sobel, Otsu, morphology" width="920" height="460" loading="lazy" />
+          <figcaption>Eight panels: clean reference, corrupted input, median / bilateral, histogram equalization, Sobel magnitude, Otsu mask, morphology (erode | dilate).</figcaption>
+        </figure>
+      </section>
+
+      <section class="card">
+        <h2>Line detection (Hough)</h2>
+        <p>Canny edges on the noisy image, then probabilistic Hough segment overlay (OpenCV).</p>
+        <figure>
+          <img src="assets/hough_lines_overlay.png" alt="Hough transform line segments overlaid on noisy grayscale image" width="700" height="700" loading="lazy" />
+          <figcaption>Red segments: detected lines (subset drawn for clarity).</figcaption>
+        </figure>
+      </section>
+
+      <section class="card">
+        <h2>Gaussian noise + classical denoisers</h2>
+        <p>Closer to the CNN training setup: additive Gaussian noise (σ = 25 ), compared against median and bilateral filters.</p>
+        <figure>
+          <img src="assets/gaussian_denoise_compare.png" alt="Four panels: clean, Gaussian noisy, median filtered, bilateral filtered" width="920" height="250" loading="lazy" />
+          <figcaption>Left to right: clean, noisy, median, bilateral.</figcaption>
+        </figure>
+      </section>
+
+      <section class="card">
+        <h2>Objective metrics</h2>
+        <p>PSNR and SSIM versus the clean reference for the Gaussian-noise experiment (same definitions as <code>src/metrics.py</code>).</p>
+        <figure>
+          <img src="assets/metrics_bars.png" alt="Bar charts of PSNR and SSIM for noisy, median, and bilateral reconstructions" width="920" height="320" loading="lazy" />
+          <figcaption>Higher is better. Classical filters improve over the noisy baseline; the CNN (trained on STL-10 patches) targets further gains—run locally and compare.</figcaption>
+        </figure>
+      </section>
+    </div>
+
+    <div id="panel-pipeline" class="panel" role="tabpanel" aria-labelledby="tab-pipeline" hidden>
+      <section class="card">
+        <h2>Overview</h2>
+        <p>
+          Built for roles mixing <strong>image processing</strong>, <strong>computer vision</strong>, and <strong>deep learning</strong>
+          (mobile / automotive sensors, ISP-style pipelines).
+        </p>
+        <div class="pipe" aria-hidden="true">
+          <span class="chip">STL-10 → grayscale patches</span>
+          <span class="arrow">→</span>
+          <span class="chip">augmentation</span>
+          <span class="arrow">→</span>
+          <span class="chip">Gaussian noise</span>
+          <span class="arrow">→</span>
+          <span class="chip">CNN predicts noise</span>
+          <span class="arrow">→</span>
+          <span class="chip">PSNR / SSIM</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Algorithms covered</h2>
+        <table>
+          <thead>
+            <tr><th>Area</th><th>Implementation</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Convolution &amp; smoothing</td><td>Gaussian blur, median, bilateral (<code>src/classical.py</code>)</td></tr>
+            <tr><td>Edges</td><td>Sobel, Canny</td></tr>
+            <tr><td>Thresholding</td><td>Global, adaptive, Otsu</td></tr>
+            <tr><td>Contrast</td><td>Histogram equalization</td></tr>
+            <tr><td>Geometry / regions</td><td>Morphology, connected components, Hough (probabilistic lines)</td></tr>
+            <tr><td>Resampling</td><td>Nearest / bilinear / bicubic resize</td></tr>
+            <tr><td>Deep learning</td><td>CNN + BatchNorm + ReLU; residual noise prediction (<code>src/models.py</code>, <code>src/train.py</code>)</td></tr>
+            <tr><td>Data</td><td>Patch dataset, augmentations, random noise level (<code>src/dataset.py</code>)</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>Repository layout</h2>
+        <pre>sensor-cv-algorithm-pipeline/
   README.md
   requirements.txt
-  docs/index.html          ← this page (GitHub Pages)
+  docs/index.html          ← this site
+  docs/assets/             ← figures for Pages (regenerate with scripts/export_docs_assets.py)
   scripts/
     prepare_data.py
     classical_skimage_demo.py
+    export_docs_assets.py
   src/
     classical.py
     dataset.py
@@ -173,47 +330,112 @@
     metrics.py
     train.py
     demo.py</pre>
-    </section>
+      </section>
+    </div>
 
-    <section>
-      <h2>Quick start</h2>
-      <h3>Environment</h3>
-      <pre>python -m venv .venv
+    <div id="panel-local" class="panel" role="tabpanel" aria-labelledby="tab-local" hidden>
+      <section class="card">
+        <h2>Environment</h2>
+        <pre>python -m venv .venv
 source .venv/bin/activate
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt</pre>
-      <h3>Data &amp; train</h3>
-      <pre>python scripts/prepare_data.py --root ./data
+      </section>
+
+      <section class="card">
+        <h2>Regenerate this website’s figures</h2>
+        <pre>python scripts/export_docs_assets.py</pre>
+        <p>Commits PNGs under <code>docs/assets/</code> so the live site updates on push.</p>
+      </section>
+
+      <section class="card">
+        <h2>Data &amp; train CNN</h2>
+        <pre>python scripts/prepare_data.py --root ./data
 python -m src.train --data-root ./data --epochs 5 --batch-size 16 --out-dir ./outputs</pre>
-      <h3>Compare classical vs CNN</h3>
-      <pre>python -m src.demo --data-root ./data --weights ./outputs/weights.pt</pre>
-      <h3>No PyTorch (classical demo only)</h3>
-      <pre>pip install numpy opencv-python-headless scikit-image scipy matplotlib
+      </section>
+
+      <section class="card">
+        <h2>Full comparison demo (classical + CNN)</h2>
+        <pre>python -m src.demo --data-root ./data --weights ./outputs/weights.pt</pre>
+        <p>Writes a multi-panel figure under <code>outputs/demo_compare.png</code>. To showcase that image on the web, copy it into <code>docs/assets/</code> and link it from <code>docs/index.html</code>, then push.</p>
+
+        <h3>Classical-only (no PyTorch)</h3>
+        <pre>pip install numpy opencv-python-headless scikit-image scipy matplotlib
 python scripts/classical_skimage_demo.py</pre>
-    </section>
+      </section>
 
-    <section>
-      <h2>GitHub Pages</h2>
-      <p>
-        After pushing this repo, enable <strong>Pages</strong> with source <strong>main</strong> and folder <strong>/docs</strong>.
-        This file will be served at:
-      </p>
-      <pre>https://edenmalka123.github.io/sensor-cv-algorithm-pipeline/</pre>
-      <p>If your repository name differs, replace <code>sensor-cv-algorithm-pipeline</code> in that URL.</p>
-    </section>
+      <section class="card">
+        <h2>True “interactive” inference in the browser</h2>
+        <p>
+          Running arbitrary Python / PyTorch inside GitHub Pages is not supported. For upload-your-image demos, typical options are
+          <a href="https://huggingface.co/spaces">Hugging Face Spaces</a> (Gradio / Streamlit),
+          <a href="https://streamlit.io/cloud">Streamlit Community Cloud</a>, or a small Flask API on a cloud VM.
+          This repo is structured so you can wrap <code>src/demo.py</code> logic in Gradio later if you want that experience.
+        </p>
+      </section>
+    </div>
 
-    <section>
-      <h2>References (related work)</h2>
-      <ul>
-        <li><a href="https://github.com/cszn/DnCNN">DnCNN</a> — CNN denoising baseline style.</li>
-        <li><a href="https://github.com/vccimaging/End2endImaging">End2endImaging</a> — differentiable imaging / pipeline thinking.</li>
-        <li><a href="https://github.com/CodeKnight314/UNet-Image-Denoising">UNet-Image-Denoising</a> — educational PyTorch denoising.</li>
-      </ul>
-    </section>
+    <div id="panel-refs" class="panel" role="tabpanel" aria-labelledby="tab-refs" hidden>
+      <section class="card">
+        <h2>References (related work)</h2>
+        <ul>
+          <li><a href="https://github.com/cszn/DnCNN">DnCNN</a> — CNN denoising baseline style.</li>
+          <li><a href="https://github.com/vccimaging/End2endImaging">End2endImaging</a> — differentiable imaging / pipeline thinking.</li>
+          <li><a href="https://github.com/CodeKnight314/UNet-Image-Denoising">UNet-Image-Denoising</a> — educational PyTorch denoising.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>GitHub Pages</h2>
+        <p>Source: branch <strong>main</strong>, folder <strong>/docs</strong>. Public URL:</p>
+        <pre>https://edenmalka123.github.io/sensor-cv-algorithm-pipeline/</pre>
+      </section>
+    </div>
   </main>
 
   <footer>
-    <div class="wrap">Eden Malka — static export of <code>sensor-cv-algorithm-pipeline</code>. See README on GitHub for full detail.</div>
+    <div class="wrap">Eden Malka — <code>sensor-cv-algorithm-pipeline</code>. Figures bundled for GitHub Pages; see README for training the CNN.</div>
   </footer>
+
+  <script>
+    (function () {
+      var tabs = [].slice.call(document.querySelectorAll('[role="tab"]'));
+      var panels = {
+        'tab-results': document.getElementById('panel-results'),
+        'tab-pipeline': document.getElementById('panel-pipeline'),
+        'tab-local': document.getElementById('panel-local'),
+        'tab-refs': document.getElementById('panel-refs')
+      };
+
+      function activate(id) {
+        tabs.forEach(function (btn) {
+          var on = btn.id === id;
+          btn.setAttribute('aria-selected', on ? 'true' : 'false');
+          btn.tabIndex = on ? 0 : -1;
+        });
+        Object.keys(panels).forEach(function (tid) {
+          var p = panels[tid];
+          var show = tid === id;
+          p.classList.toggle('active', show);
+          p.hidden = !show;
+        });
+      }
+
+      tabs.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          activate(btn.id);
+        });
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        var i = tabs.findIndex(function (b) { return b.getAttribute('aria-selected') === 'true'; });
+        if (i < 0) return;
+        var j = e.key === 'ArrowRight' ? Math.min(tabs.length - 1, i + 1) : Math.max(0, i - 1);
+        tabs[j].focus();
+        activate(tabs[j].id);
+      });
+    })();
+  </script>
 </body>
 </html>

@@ -1,0 +1,1 @@
+{"figures":["classical_pipeline_grid.png","hough_lines_overlay.png","gaussian_denoise_compare.png","metrics_bars.png"],"psnr_vs_clean_gaussian":{"noisy":20.6127,"median":26.2922,"bilateral":27.8321},"ssim_vs_clean_gaussian":{"noisy":0.3033,"median":0.6062,"bilateral":0.6554}}

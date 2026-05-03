@@ -1,5 +1,10 @@
 # Sensor-Oriented Image Processing & CNN Denoising (End-to-End)
 
+[![Live project site — GitHub Pages](https://img.shields.io/badge/Live%20site-GitHub%20Pages-66b3ff?style=flat-square)](https://edenmalka123.github.io/sensor-cv-algorithm-pipeline/)
+[![Repository](https://img.shields.io/badge/Code-GitHub-8b949e?style=flat-square&logo=github)](https://github.com/EDENMALKA123/sensor-cv-algorithm-pipeline)
+
+**Browse the full visual walkthrough (figures, metrics, tabbed sections): [edenmalka123.github.io/sensor-cv-algorithm-pipeline](https://edenmalka123.github.io/sensor-cv-algorithm-pipeline/)**
+
 Python portfolio project aligned with **image sensor / ISP-style algorithm engineering**: classical preprocessing and analysis, plus a **deep learning denoiser** trained on realistic additive noise. Suitable to discuss for roles mixing **image processing**, **computer vision**, and **deep learning** (mobile/automotive sensor context).
 
 ## What this repo demonstrates
@@ -77,8 +82,11 @@ python scripts/classical_skimage_demo.py
 sensor-cv-algorithm-pipeline/
   README.md
   requirements.txt
-  docs/index.html   # portfolio / GitHub Pages overview of the whole project
+  docs/index.html          # GitHub Pages landing page (tabbed walkthrough)
+  docs/assets/             # Figures + run_summary.json (see scripts/export_docs_assets.py)
   scripts/prepare_data.py
+  scripts/classical_skimage_demo.py
+  scripts/export_docs_assets.py
   src/
     classical.py      # classical IP/CV chain + utilities
     dataset.py        # noisy patches + augmentations
@@ -88,7 +96,15 @@ sensor-cv-algorithm-pipeline/
     demo.py           # visualization & benchmarking
 ```
 
-## Static HTML (GitHub Pages)
+## Static HTML & GitHub Pages
 
-The full project summary for recruiters and reviewers lives in [**docs/index.html**](docs/index.html). After you push to GitHub: **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `main` → Folder: `/docs`**. The site URL will be `https://edenmalka123.github.io/<repo-name>/` (use your exact repo name in the path).
+- **Live site:** [https://edenmalka123.github.io/sensor-cv-algorithm-pipeline/](https://edenmalka123.github.io/sensor-cv-algorithm-pipeline/) (from `docs/index.html` + bundled figures).
+- **Figures on the site** live in `docs/assets/`. Regenerate them anytime after changing the pipeline:
+
+```bash
+python scripts/export_docs_assets.py
+```
+
+- After training, you can copy `outputs/demo_compare.png` into `docs/assets/` and reference it from `docs/index.html` to show the **CNN** panel online too.
+- Enable Pages with **Settings → Pages → Branch: `main` → Folder `/docs`**. Add the same URL under **About → Website** on the repo home page.
 

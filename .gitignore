@@ -1,0 +1,16 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.so
+.DS_Store
+
+# Downloaded datasets (regenerate with scripts/prepare_data.py)
+data/
+
+# Local runs: weights, figures, logs
+outputs/
+*.pt
+.ipynb_checkpoints/

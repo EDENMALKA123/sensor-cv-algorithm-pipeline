@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sensor-oriented image processing & CNN denoising — Eden Malka</title>
+  <meta name="description" content="End-to-end Python project: classical image processing, STL-10 noisy patches, residual CNN denoising, PSNR/SSIM." />
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a2332;
+      --text: #e8eef7;
+      --muted: #9fb0c8;
+      --accent: #66b3ff;
+      --border: #2c3a50;
+      --code-bg: #121922;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header {
+      padding: 2.5rem 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #162030 0%, var(--bg) 100%);
+    }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 0 1.25rem; }
+    h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 0.5rem; letter-spacing: -0.02em; }
+    .subtitle { color: var(--muted); font-size: 1.05rem; margin: 0 0 1rem; }
+    .links { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; font-size: 0.95rem; }
+    main { padding: 2rem 0 3rem; }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.35rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    h2 {
+      font-size: 1.15rem;
+      margin: 0 0 0.85rem;
+      color: #cfe4ff;
+      font-weight: 600;
+    }
+    h3 { font-size: 1rem; margin: 1rem 0 0.5rem; color: var(--text); }
+    p { margin: 0.5rem 0; color: var(--muted); }
+    ul { margin: 0.35rem 0 0; padding-left: 1.25rem; color: var(--muted); }
+    li { margin: 0.25rem 0; }
+    code, pre {
+      font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
+      font-size: 0.82rem;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-x: auto;
+      color: #d6e5ff;
+      margin: 0.75rem 0 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.65rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #243047; color: #dbe8ff; font-weight: 600; }
+    td { color: var(--muted); }
+    .pipe {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.75rem;
+      font-size: 0.88rem;
+    }
+    .chip {
+      background: #243047;
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      color: #dbe8ff;
+    }
+    .arrow { color: var(--muted); }
+    footer {
+      padding: 1.5rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Sensor-oriented image processing &amp; CNN denoising</h1>
+      <p class="subtitle">End-to-end Python pipeline: classical ISP-style algorithms, synthetic noise, residual CNN, PSNR / SSIM.</p>
+      <nav class="links" aria-label="Project links">
+        <a href="https://github.com/EDENMALKA123/sensor-cv-algorithm-pipeline">GitHub repository</a>
+        <a href="https://github.com/EDENMALKA123">Profile (@EDENMALKA123)</a>
+        <a href="https://www.linkedin.com/in/eden-malka-105833208/">LinkedIn</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section>
+      <h2>Overview</h2>
+      <p>
+        This project targets roles that combine <strong>image processing</strong>, <strong>computer vision</strong>, and <strong>deep learning</strong>
+        (for example mobile or automotive <strong>image sensors</strong> and ISP-style tuning). It implements a full loop from
+        <strong>data preparation</strong> through <strong>classical preprocessing</strong> and a trained <strong>convolutional denoiser</strong>, with quantitative metrics.
+      </p>
+      <div class="pipe" aria-hidden="true">
+        <span class="chip">STL-10 → grayscale patches</span>
+        <span class="arrow">→</span>
+        <span class="chip">augmentation</span>
+        <span class="arrow">→</span>
+        <span class="chip">Gaussian noise</span>
+        <span class="arrow">→</span>
+        <span class="chip">CNN predicts noise</span>
+        <span class="arrow">→</span>
+        <span class="chip">PSNR / SSIM</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Algorithms covered</h2>
+      <table>
+        <thead>
+          <tr><th>Area</th><th>Implementation</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Convolution &amp; smoothing</td><td>Gaussian blur, median, bilateral (<code>src/classical.py</code>)</td></tr>
+          <tr><td>Edges</td><td>Sobel, Canny</td></tr>
+          <tr><td>Thresholding</td><td>Global, adaptive, Otsu</td></tr>
+          <tr><td>Contrast</td><td>Histogram equalization</td></tr>
+          <tr><td>Geometry / regions</td><td>Morphology, connected components, Hough (probabilistic lines)</td></tr>
+          <tr><td>Resampling</td><td>Nearest / bilinear / bicubic resize</td></tr>
+          <tr><td>Deep learning</td><td>CNN + BatchNorm + ReLU; residual noise prediction; training loop (<code>src/models.py</code>, <code>src/train.py</code>)</td></tr>
+          <tr><td>Data</td><td>Patch dataset, flips/rotations/crops, random noise level (<code>src/dataset.py</code>)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Repository layout</h2>
+      <pre>sensor-cv-algorithm-pipeline/
+  README.md
+  requirements.txt
+  docs/index.html          ← this page (GitHub Pages)
+  scripts/
+    prepare_data.py
+    classical_skimage_demo.py
+  src/
+    classical.py
+    dataset.py
+    models.py
+    metrics.py
+    train.py
+    demo.py</pre>
+    </section>
+
+    <section>
+      <h2>Quick start</h2>
+      <h3>Environment</h3>
+      <pre>python -m venv .venv
+source .venv/bin/activate
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements.txt</pre>
+      <h3>Data &amp; train</h3>
+      <pre>python scripts/prepare_data.py --root ./data
+python -m src.train --data-root ./data --epochs 5 --batch-size 16 --out-dir ./outputs</pre>
+      <h3>Compare classical vs CNN</h3>
+      <pre>python -m src.demo --data-root ./data --weights ./outputs/weights.pt</pre>
+      <h3>No PyTorch (classical demo only)</h3>
+      <pre>pip install numpy opencv-python-headless scikit-image scipy matplotlib
+python scripts/classical_skimage_demo.py</pre>
+    </section>
+
+    <section>
+      <h2>GitHub Pages</h2>
+      <p>
+        After pushing this repo, enable <strong>Pages</strong> with source <strong>main</strong> and folder <strong>/docs</strong>.
+        This file will be served at:
+      </p>
+      <pre>https://edenmalka123.github.io/sensor-cv-algorithm-pipeline/</pre>
+      <p>If your repository name differs, replace <code>sensor-cv-algorithm-pipeline</code> in that URL.</p>
+    </section>
+
+    <section>
+      <h2>References (related work)</h2>
+      <ul>
+        <li><a href="https://github.com/cszn/DnCNN">DnCNN</a> — CNN denoising baseline style.</li>
+        <li><a href="https://github.com/vccimaging/End2endImaging">End2endImaging</a> — differentiable imaging / pipeline thinking.</li>
+        <li><a href="https://github.com/CodeKnight314/UNet-Image-Denoising">UNet-Image-Denoising</a> — educational PyTorch denoising.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">Eden Malka — static export of <code>sensor-cv-algorithm-pipeline</code>. See README on GitHub for full detail.</div>
+  </footer>
+</body>
+</html>
